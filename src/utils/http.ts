@@ -25,3 +25,44 @@ const httpInterceptor = {
 }
 //添加拦截器
 uni.addInterceptor('request', httpInterceptor)
+uni.addInterceptor('uploadFile', httpInterceptor)
+
+interface Data<T> {
+  code: string
+  msg: string
+  result: T
+}
+
+const http = <T>(options: UniApp.RequestOptions) => {
+  return new Promise<Data<T>>((resolve, reject) => {
+    uni.request({
+      ...options,
+      success(res) {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          resolve(res.data as Data<T>)
+        } else if (res.statusCode === 401) {
+          // 401 错误，跳转登录页
+          const memberStore = useMemberStore()
+          memberStore.clearProfile()
+          uni.navigateTo({ url: '/pages/login/login' })
+          reject(res)
+        } else {
+          // 其他错误，根据实际情况处理
+          uni.showToast({
+            icon: 'none',
+            title: (res.data as Data<T>).msg || '请求失败',
+          })
+          reject(res)
+        }
+      },
+      fail(err) {
+        uni.showToast({
+          icon: 'none',
+          title: '网络错误，请稍后重试',
+        })
+        reject(err)
+      },
+    })
+  })
+}
+export default http
