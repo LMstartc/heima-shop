@@ -53,8 +53,8 @@
     "appid": "wx629603fbaaf5b68b",
     "setting": {
       "urlCheck": false,
-      "ignoreDevUnusedFiles": false,
-      "ignoreUploadUnusedFiles": false
+      "ignoreDevUnusedFiles": false, /* 忽略开发环境未使用的文件 */
+      "ignoreUploadUnusedFiles": false /* 忽略上传时未使用的文件 */
     },
     "usingComponents": true
   },
