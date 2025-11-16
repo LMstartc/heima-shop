@@ -35,7 +35,7 @@ const hotList = ref<HotMultiItem[]>([])
 const getHomeHotMultiData = async () => {
   const res = await getHomeHotMultiAPI()
   hotList.value = res.result
-
+  //console.log(hotList.value)
   hotList.value.forEach((item) => {
     for (const img of item.pictures) {
       if (img.includes('https')) {
