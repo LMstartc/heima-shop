@@ -4,12 +4,10 @@ import http from '@/utils/http'
 
 const memberStore = useMemberStore()
 
-const getData = async () => {
-  const res = await http<string[]>({
-    url: '/home/banner',
-    method: 'GET',
+const getData = () => {
+  uni.navigateTo({
+    url: '/pages/login/login',
   })
-  console.log(res)
 }
 </script>
 
