@@ -3,6 +3,8 @@
 <script setup lang="ts">
 import { getLoginWxMinAPI } from '@/services/login'
 import { onLoad } from '@dcloudio/uni-app'
+import { useMemberStore } from '@/stores/modules/member'
+import type { LoginResult } from '@/types/member'
 //获取code
 let code = ''
 onLoad(async () => {
@@ -10,13 +12,29 @@ onLoad(async () => {
   code = res.code
 })
 //获取用户手机号码
+const member = useMemberStore()
 const handleGetPhoneNumber: UniHelper.ButtonOnGetphonenumber = async (ev) => {
-  const encryptedData = '13708671256'
+  const encryptedData = '13123456789'
   // 调用登录接口
   const res = await getLoginWxMinAPI({
     phoneNumber: encryptedData || '',
   })
-  console.log(res)
+  // 登录成功处理
+  loginSuccess(res.result)
+}
+const loginSuccess = (profile: LoginResult) => {
+  // 保存会员信息
+  member.setProfile(profile)
+  //成功提示
+  uni.showToast({
+    title: '登录成功',
+    icon: 'success',
+  })
+  setTimeout(() => {
+    uni.switchTab({
+      url: '/pages/my/my',
+    })
+  }, 500)
 }
 </script>
 
