@@ -53,8 +53,8 @@ defineExpose({
   <view class="guess">
     <navigator
       class="guess-item"
-      v-for="item in guessList"
-      :key="item.id"
+      v-for="(item, index) in guessList"
+      :key="index"
       :url="`/pages/goods/goods?id=${item.id}`"
     >
       <image class="image" mode="aspectFill" :src="item.picture"></image>

@@ -2,9 +2,15 @@
 import { getGoodsByIdAPI } from '@/services/goods'
 import { onLoad } from '@dcloudio/uni-app'
 import type { GoodsResult } from '@/types/good'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import AddressPanel from './components/AddressPanel.vue'
 import ServicePanel from './components/ServicePanel.vue'
+import type {
+  SkuPopupEvent,
+  SkuPopupInstance,
+  SkuPopupLocaldata,
+} from '@/components/vk-data-goods-sku-popup/vk-data-goods-sku-popup'
+import { postMemberCartAPI } from '@/services/cart'
 
 // 获取屏幕边界到安全区域距离
 const { safeAreaInsets } = uni.getSystemInfoSync()
@@ -20,7 +26,30 @@ const goods = ref<GoodsResult>()
 const getGoodsDetail = async () => {
   const res = await getGoodsByIdAPI(query.id)
   goods.value = res.result
-  console.log(goods.value.mainPictures)
+  //console.log(goods.value.mainPictures)
+  //处理sku
+  localdata.value = {
+    _id: res.result.id,
+    name: res.result?.name || '',
+    goods_thumb: res.result?.mainPictures[0] || '',
+    spec_list: res.result.specs.map((item) => {
+      return {
+        name: item.name,
+        list: item.values,
+      }
+    }),
+    sku_list: res.result.skus.map((item) => {
+      return {
+        _id: item.id,
+        goods_id: res.result.id,
+        goods_name: res.result?.name || '',
+        image: item.picture,
+        price: item.price * 100,
+        sku_name_arr: item.specs.map((spec) => spec.valueName),
+        stock: item.inventory,
+      }
+    }),
+  }
 }
 // 切换图片时更新当前索引
 const currentIndex = ref(0)
@@ -47,9 +76,59 @@ const openPopup = (name: typeof popupName.value) => {
 onLoad(() => {
   getGoodsDetail()
 })
+// 控制弹窗显示
+const isShowSku = ref(false)
+// 本地商品数据
+const localdata = ref({} as SkuPopupLocaldata)
+// 弹窗模式
+enum SkuPopupMode {
+  both = 1,
+  cart = 2,
+  buy = 3,
+}
+const mode = ref<SkuPopupMode>(SkuPopupMode.both)
+//打开sku弹窗修改按钮模式
+const openSkuPopup = (type: SkuPopupMode) => {
+  mode.value = type
+  //显示sku
+  isShowSku.value = true
+}
+// 引用sku弹窗组件
+const skuPopupRef = ref<SkuPopupInstance>()
+//计算被选中的值
+const selectArrText = computed(() => {
+  //console.log(skuPopupRef.value?.selectArr)
+  return skuPopupRef.value?.selectArr?.join(' ').trim() || '请选择商品规格'
+})
+//加入购物车函数
+const onAddCart = async (ev: SkuPopupEvent) => {
+  await postMemberCartAPI({
+    skuId: ev._id,
+    count: ev.buy_num,
+  })
+  uni.showToast({
+    title: '加入购物车成功',
+    icon: 'success',
+  })
+  isShowSku.value = false
+}
 </script>
 
 <template>
+  <vk-data-goods-sku-popup
+    v-model="isShowSku"
+    :localdata="localdata"
+    :mode="mode"
+    add-cart-background-color="#FFA868"
+    buy-now-background-color="#27BA9B"
+    ref="skuPopupRef"
+    :actived-style="{
+      color: '#27BA9B',
+      borderColor: '#27BA9B',
+      backgroundColor: '#E9F8F5',
+    }"
+    @add-cart="onAddCart"
+  />
   <scroll-view scroll-y class="viewport">
     <!-- 基本信息 -->
     <view class="goods">
@@ -79,9 +158,9 @@ onLoad(() => {
 
       <!-- 操作面板 -->
       <view class="action">
-        <view class="item arrow">
+        <view class="item arrow" @tap="openSkuPopup(SkuPopupMode.both)">
           <text class="label">选择</text>
-          <text class="text ellipsis"> 请选择商品规格 </text>
+          <text class="text ellipsis"> {{ selectArrText }} </text>
         </view>
         <view class="item arrow" @tap="openPopup('Address')">
           <text class="label">送至</text>
@@ -148,13 +227,13 @@ onLoad(() => {
       <button class="icons-button" open-type="contact">
         <text class="icon-handset"></text>客服
       </button>
-      <navigator class="icons-button" url="/pages/cart/cart" open-type="switchTab">
+      <navigator class="icons-button" url="/pages/cart/cart2" open-type="navigate">
         <text class="icon-cart"></text>购物车
       </navigator>
     </view>
     <view class="buttons">
-      <view class="addcart"> 加入购物车 </view>
-      <view class="buynow"> 立即购买 </view>
+      <view class="addcart" @tap="openSkuPopup(SkuPopupMode.cart)"> 加入购物车 </view>
+      <view class="buynow" @tap="openSkuPopup(SkuPopupMode.buy)"> 立即购买 </view>
     </view>
   </view>
 
