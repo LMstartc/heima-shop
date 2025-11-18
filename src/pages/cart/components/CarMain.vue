@@ -10,7 +10,7 @@ import { onShow } from '@dcloudio/uni-app'
 import type { CartItem } from '@/types/cart'
 import { computed, ref } from 'vue'
 import type { InputNumberBoxEvent } from '@/components/vk-data-input-number-box/vk-data-input-number-box'
-
+const { safeAreaInsets } = uni.getSystemInfoSync()
 //获取会员信息
 const memberStore = useMemberStore()
 
@@ -79,10 +79,23 @@ const gotoPayment = () => {
   }
   //跳转到结算页
 }
+
+//是否显示安全区域
+const props = defineProps({
+  isSafeArea: {
+    type: Boolean,
+    default: false,
+  },
+})
+const SafeArea = ref(0)
+if (props.isSafeArea) {
+  SafeArea.value = safeAreaInsets!.bottom
+}
 //初始化调用
 onShow(async () => {
   if (!memberStore.profile) return
   await getMemberCartData()
+  console.log(safeAreaInsets)
 })
 </script>
 
@@ -151,7 +164,7 @@ onShow(async () => {
         </navigator>
       </view>
       <!-- 吸底工具栏 -->
-      <view class="toolbar">
+      <view class="toolbar" :style="{ paddingBottom: SafeArea + 'px' }">
         <text @tap="onChangeAllSelected" class="all" :class="{ checked: isAllSelected }">全选</text>
         <text class="text">合计:</text>
         <text class="amount">{{ selectTotalPrice }}</text>
@@ -175,8 +188,6 @@ onShow(async () => {
     </view>
     <!-- 猜你喜欢 -->
     <XtxGuess ref="guessRef"></XtxGuess>
-    <!-- 底部占位空盒子 -->
-    <view class="toolbar-height"></view>
   </scroll-view>
 </template>
 
@@ -465,7 +476,7 @@ onShow(async () => {
   }
 }
 // 底部占位空盒子
-.toolbar-height {
-  height: 100rpx;
-}
+// .toolbar-height {
+//   height: env(safe-area-inset-bottom);
+// }
 </style>
