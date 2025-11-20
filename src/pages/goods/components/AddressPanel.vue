@@ -1,33 +1,52 @@
 // AddressPanel.vue
 <script setup lang="ts">
+import { getMemberAddressAPI } from '@/services/address'
+import type { AddressItem } from '@/types/address'
+import { onLoad, onShow } from '@dcloudio/uni-app'
+import { onMounted, ref } from 'vue'
 //
 const emit = defineEmits<{
-  (event: 'close'): void
+  (event: 'close', address: AddressItem | null): void
 }>()
+// eslint-disable-next-line no-undef
+const addressList = ref<AddressItem[]>()
+const selectedAddress = ref({} as AddressItem)
+const getAddressList = async () => {
+  const res = await getMemberAddressAPI()
+  addressList.value = res.result || []
+  selectedAddress.value =
+    addressList.value.find((item) => item.isDefault === 1) || ({} as AddressItem)
+}
+const setSelectedAddress = (item: AddressItem) => {
+  selectedAddress.value!.isDefault = 0
+  item.isDefault = 1
+  selectedAddress.value = item
+}
+defineExpose({
+  getAddressList,
+  setSelectedAddress,
+})
+
+onMounted(() => {
+  getAddressList()
+})
 </script>
 
 <template>
   <view class="address-panel">
     <!-- 关闭按钮 -->
-    <text class="close icon-close" @tap="emit('close')"></text>
+    <text class="close icon-close" @tap="emit('close', selectedAddress)"></text>
     <!-- 标题 -->
     <view class="title">配送至</view>
     <!-- 内容 -->
     <view class="content">
-      <view class="item">
-        <view class="user">李明 13824686868</view>
-        <view class="address">北京市顺义区后沙峪地区安平北街6号院</view>
-        <text class="icon icon-checked"></text>
-      </view>
-      <view class="item">
-        <view class="user">王东 13824686868</view>
-        <view class="address">北京市顺义区后沙峪地区安平北街6号院</view>
-        <text class="icon icon-ring"></text>
-      </view>
-      <view class="item">
-        <view class="user">张三 13824686868</view>
-        <view class="address">北京市朝阳区孙河安平北街6号院</view>
-        <text class="icon icon-ring"></text>
+      <view class="item" v-for="item in addressList" :key="item.id" @tap="setSelectedAddress(item)">
+        <view class="user">{{ item.receiver }} {{ item.contact }}</view>
+        <view class="address">{{ item.fullLocation }}{{ item.address }}</view>
+        <text
+          class="icon"
+          :class="{ 'icon-checked': item.isDefault, 'icon-ring': item.isDefault === 0 }"
+        ></text>
       </view>
     </view>
     <view class="footer">

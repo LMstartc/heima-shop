@@ -78,6 +78,9 @@ const gotoPayment = () => {
     return
   }
   //跳转到结算页
+  uni.navigateTo({
+    url: '/pagesOrder/create/create',
+  })
 }
 
 //是否显示安全区域
@@ -95,7 +98,6 @@ if (props.isSafeArea) {
 onShow(async () => {
   if (!memberStore.profile) return
   await getMemberCartData()
-  console.log(safeAreaInsets)
 })
 </script>
 

@@ -1,5 +1,7 @@
 import type { CommonGoodsItem } from './global'
 import type { AddressItem } from './address'
+import AddressPanel from '@/pages/goods/components/AddressPanel.vue'
+export type AddressPanelInstance = InstanceType<typeof AddressPanel>
 /** 商品信息 */
 export type GoodsResult = {
   /** id */
