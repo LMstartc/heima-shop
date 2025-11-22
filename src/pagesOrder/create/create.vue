@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { getMemberOrderPreAPI, getMemberOrderPreNowAPI, postMemberOrderAPI } from '@/services/order'
-import { onLoad } from '@dcloudio/uni-app'
+import { onHide, onLoad, onUnload } from '@dcloudio/uni-app'
 import type { OrderPreResult } from '@/types/order'
 import { useAddressStore } from '@/stores/modules/address'
 import type { AddressItem } from '@/types/address'
+import { getMemberAddressAPI } from '@/services/address'
 // 获取屏幕边界到安全区域距离
 const { safeAreaInsets } = uni.getSystemInfoSync()
 // 订单备注
@@ -38,8 +39,8 @@ const props = defineProps({
 })
 //获取预付订单
 const orderPre = ref<OrderPreResult>()
+const addressList = ref<AddressItem[]>([])
 const getMemberOrderPreData = async () => {
-  //console.log(props.skuId, props.count, props.addressId)
   if (props.skuId && props.count && props.addressId) {
     const res = await getMemberOrderPreNowAPI({
       skuId: props.skuId,
@@ -47,33 +48,30 @@ const getMemberOrderPreData = async () => {
       addressId: props.addressId,
     })
     orderPre.value = res.result
-    //console.log(orderPre.value)
   } else {
     const res = await getMemberOrderPreAPI()
     orderPre.value = res.result
-    //console.log(res)
   }
-
-  //console.log(orderPre.value)
+  const AddressRes = await getMemberAddressAPI()
+  addressList.value = AddressRes.result || []
+  //console.log(addressList.value)
 }
 //获取选中的地址
 const addressStore = useAddressStore()
 
 //收货地址
 const selectAddress = computed(() => {
-  let onceAddress = false
-  if (props.addressId) {
-    onceAddress = true
+  // 有传入 addressId
+  if (props.addressId !== 'undefined' && !addressStore.selectedAddress) {
+    console.log(props.addressId, addressStore.selectedAddress)
+    return orderPre.value?.userAddresses.find((item) => item.id === props.addressId)
   }
-  if (onceAddress) {
-    const address = orderPre.value?.userAddresses.find((item) => item.id === props.addressId)
-    onceAddress = false
-    return address
-  }
-  return (
-    addressStore.selectedAddress || orderPre.value?.userAddresses.find((item) => item.isDefault)
-  )
+
+  // 否则使用选中的地址或默认地址
+  //console.log(addressList.value?.find((item) => item.isDefault === 1))
+  return addressStore.selectedAddress || addressList.value?.find((item) => item.isDefault === 1)
 })
+
 //提交订单
 const onSubmitOrder = async () => {
   if (!selectAddress.value?.id) {
@@ -94,13 +92,15 @@ const onSubmitOrder = async () => {
     payChannel: 2,
     payType: 1,
   })
-  console.log(res)
   uni.redirectTo({
-    url: '/pagesOrder/detail/detail',
+    url: `/pagesOrder/detail/detail?id=${res.result.id}`,
   })
 }
 onLoad(async () => {
   await getMemberOrderPreData()
+})
+onUnload(() => {
+  addressStore.changeSelectedAddress(null)
 })
 </script>
 
