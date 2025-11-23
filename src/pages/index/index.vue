@@ -98,6 +98,9 @@ const onRefresherrefresh = async () => {
 
 <style lang="scss">
 // 首页
+/* #ifdef APP-PLUS */
+#app,
+/* #endif */
 page {
   background-color: #f7f7f7;
   height: 100%;

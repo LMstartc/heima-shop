@@ -5,3 +5,9 @@ import CarMain from './components/CarMain.vue'
 <template>
   <CarMain />
 </template>
+
+<style scoped lang="scss">
+page {
+  height: 100%;
+}
+</style>

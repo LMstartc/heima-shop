@@ -16,6 +16,7 @@ const getMemberProfileData = async () => {
 }
 //修改头像
 const onAvatarChange = () => {
+  // #ifdef MP-WEIXIN
   uni.chooseMedia({
     count: 1,
     mediaType: ['image'],
@@ -37,6 +38,30 @@ const onAvatarChange = () => {
       })
     },
   })
+  // #endif
+
+  // #ifdef APP-PLUS || H5
+  uni.chooseImage({
+    count: 1,
+    success: (res) => {
+      const tempFilePath = res.tempFilePaths[0]
+      uni.uploadFile({
+        url: '/member/profile/avatar',
+        filePath: tempFilePath,
+        name: 'file',
+        success: (res) => {
+          if (res.statusCode === 200) {
+            const avatar = JSON.parse(res.data).result.avatar
+            profile.value!.avatar = avatar
+            uni.showToast({
+              title: '修改成功',
+            })
+          }
+        },
+      })
+    },
+  })
+  // #endif
 }
 //提交表单
 const onSubmit = async () => {

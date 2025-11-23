@@ -135,6 +135,7 @@ onLoad(() => {
       </uni-forms-item>
       <uni-forms-item name="fullLocation" class="form-item">
         <text class="label">所在地区</text>
+        <!--#ifdef MP-WEIXIN-->
         <picker
           @change="onChangeRegion"
           class="picker"
@@ -144,6 +145,7 @@ onLoad(() => {
           <view v-if="form.fullLocation">{{ form.fullLocation }}</view>
           <view v-else class="placeholder">请选择省/市/区(县)</view>
         </picker>
+        <!--#endif-->
       </uni-forms-item>
       <uni-forms-item name="address" class="form-item">
         <text class="label">详细地址</text>

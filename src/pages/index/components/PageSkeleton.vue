@@ -161,6 +161,13 @@
 </template>
 
 <style lang="scss">
+//H5端默认开启scoped
+/* #ifdef APP-PLUS || H5 */
+@import '@/components/styles/XtxSwiper.scss';
+@import './styles/CategoryPanel.scss';
+@import './styles/HotPanel.scss';
+/* #endif */
+
 .sk-transparent {
   color: transparent !important;
 }

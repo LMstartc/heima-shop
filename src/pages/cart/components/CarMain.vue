@@ -10,6 +10,7 @@ import { onShow } from '@dcloudio/uni-app'
 import type { CartItem } from '@/types/cart'
 import { computed, ref } from 'vue'
 import type { InputNumberBoxEvent } from '@/components/vk-data-input-number-box/vk-data-input-number-box'
+import { useGuessList } from '@/composables'
 const { safeAreaInsets } = uni.getSystemInfoSync()
 //获取会员信息
 const memberStore = useMemberStore()
@@ -82,7 +83,7 @@ const gotoPayment = () => {
     url: '/pagesOrder/create/create',
   })
 }
-
+const { guessRef, handleScrollToLower } = useGuessList()
 //是否显示安全区域
 const props = defineProps({
   isSafeArea: {
@@ -94,6 +95,9 @@ const SafeArea = ref(0)
 if (props.isSafeArea) {
   SafeArea.value = safeAreaInsets!.bottom
 }
+const test = () => {
+  console.log('test')
+}
 //初始化调用
 onShow(async () => {
   if (!memberStore.profile) return
@@ -102,7 +106,7 @@ onShow(async () => {
 </script>
 
 <template>
-  <scroll-view scroll-y class="scroll-view">
+  <scroll-view scroll-y class="scroll-view" @scrolltolower="handleScrollToLower">
     <!-- 已登录: 显示购物车 -->
     <template v-if="memberStore.profile">
       <!-- 购物车列表 -->
